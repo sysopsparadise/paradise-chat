@@ -1,11 +1,39 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Paradise Chat Test</title>
+  <link href="https://cdn.jsdelivr.net/npm/@n8n/chat/dist/style.css" rel="stylesheet" />
+  <style>
+    body { font-family: system-ui, sans-serif; padding: 3rem; background: #f6f7f9; }
+    :root {
+      --chat--color--primary: #16324f;
+      --chat--color--primary-shade-50: #122a42;
+      --chat--color--secondary: #c9a14a;
+      --chat--color-secondary-shade-50: #b8923f;
+      --chat--color-dark: #16324f;
+      --chat--border-radius: 12px;
+      --chat--toggle--background: #16324f;
+      --chat--message--user--background: #c9a14a;
+      --chat--button--background--primary: #c9a14a;
+    }
+  </style>
 </head>
 <body>
-    
+  <h1>Paradise Real Estate — chat widget test page</h1>
+  <p>The chat bubble should appear bottom-right.</p>
+
+  <script type="module">
+    import { createChat } from 'https://cdn.jsdelivr.net/npm/@n8n/chat/dist/chat.bundle.es.js';
+    createChat({
+      webhookUrl: 'https://n8n.patom.dev/webhook/b1f5269f-a52e-46e7-aff2-ea4103f5eae0/chat',
+      mode: 'window',
+      showWelcomeScreen: false,
+      initialMessages: [
+        'Welcome to Paradise Real Estate 👋 This is Ana. How can I help you today?'
+      ],
+    });
+  </script>
 </body>
 </html>
