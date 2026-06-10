@@ -1,346 +1,144 @@
-<!-- Paradise Real Estate · Dual Widget -->
-<!-- Paste this entire block just before </body> on every page -->
-
-<!-- 1. n8n chat styles -->
-<link href="https://cdn.jsdelivr.net/npm/@n8n/chat/dist/style.css" rel="stylesheet"/>
-
-<!-- 2. Vapi script -->
-<script src="https://unpkg.com/@vapi-ai/client-sdk-react/dist/embed/widget.umd.js" async type="text/javascript"></script>
-
-<!-- 3. Vapi widget element — hidden until call icon clicked -->
-<vapi-widget
-  id="vapiWidget"
-  public-key="9585658c-2c48-4824-b6ec-aca50aac826e"
-  assistant-id="9b1c1276-181f-4255-a532-d20ee1d40b88"
-  mode="voice"
-  theme="light"
-  size="compact"
-  position="bottom-right"
-  main-label="Talk with Ana"
-  start-button-text="Start Call with Ana"
-  end-button-text="End Call"
-  empty-voice-message="Ana- AI Receptionist. Ask about properties in Jávea or Dénia, pricing, or viewings."
-  button-base-color="#000000"
-  button-accent-color="#ffffff"
-  accent-color="#14B8A6"
-  style="display:none;">
-</vapi-widget>
-
-<!-- 4. Styles -->
-<style>
-  /* ── Chat widget branding (unchanged from original) ── */
-  :root {
-    --chat--color--primary: #16324f;
-    --chat--color--primary-shade-50: #122a42;
-    --chat--color--secondary: #c9a14a;
-    --chat--color-secondary-shade-50: #b8923f;
-    --chat--color-dark: #16324f;
-    --chat--border-radius: 12px;
-    --chat--toggle--background: #16324f;
-    --chat--message--user--background: #c9a14a;
-    --chat--button--background--primary: #c9a14a;
-    --chat--header--padding: 1.25rem 1.5rem;
-    --chat--heading--font-size: 1.7em;
-    --chat--subtitle--line-height: 1.4;
-  }
-  .chat-header {
-    display: flex !important;
-    flex-direction: column !important;
-    align-items: center !important;
-    text-align: center !important;
-    gap: 4px;
-  }
-  .chat-header::before {
-    content: "";
-    display: block;
-    width: 150px;
-    height: 46px;
-    margin: 0 auto 4px;
-    background-image: url("https://www.paradiserealestate.es/crm/pages/agencies/paradisepro/assets/logofooter.svg");
-    background-size: contain;
-    background-repeat: no-repeat;
-    background-position: center;
-  }
-  .chat-header h1 { margin: 0 !important; line-height: 1.15 !important; }
-  .chat-header p  { margin: 0 !important; opacity: 0.9; }
-  .chat-message { position: relative !important; overflow: visible !important; }
-  .chat-message-from-bot { margin-left: 46px; }
-  .chat-message-from-bot::before {
-    content: "";
-    position: absolute;
-    left: -46px; bottom: 0;
-    width: 34px; height: 34px;
-    border-radius: 50%;
-    background-color: #16324f;
-    background-image: url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='18'%20height='18'%20viewBox='0%200%2024%2024'%20fill='none'%20stroke='white'%20stroke-width='2'%20stroke-linecap='round'%20stroke-linejoin='round'%3E%3Cpath%20d='M12%208V4H8'/%3E%3Crect%20width='16'%20height='12'%20x='4'%20y='8'%20rx='2'/%3E%3Cpath%20d='M2%2014h2'/%3E%3Cpath%20d='M20%2014h2'/%3E%3Cpath%20d='M15%2013v2'/%3E%3Cpath%20d='M9%2013v2'/%3E%3C/svg%3E");
-    background-repeat: no-repeat;
-    background-position: center;
-    background-size: 18px;
-  }
-  .chat-message-from-user { margin-right: 46px; }
-  .chat-message-from-user::before {
-    content: "";
-    position: absolute;
-    right: -46px; bottom: 0;
-    width: 34px; height: 34px;
-    border-radius: 50%;
-    background-color: #c9a14a;
-    background-image: url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='18'%20height='18'%20viewBox='0%200%2024%2024'%20fill='none'%20stroke='white'%20stroke-width='2'%20stroke-linecap='round'%20stroke-linejoin='round'%3E%3Cpath%20d='M19%2021v-2a4%204%200%200%200-4-4H9a4%204%200%200%200-4%204v2'/%3E%3Ccircle%20cx='12'%20cy='7'%20r='4'/%3E%3C/svg%3E");
-    background-repeat: no-repeat;
-    background-position: center;
-    background-size: 18px;
-  }
-
-  /* ── FAB launcher ── */
-  #pre-fab {
-    position: fixed;
-    bottom: 24px;
-    right: 24px;
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-    gap: 14px;
-    z-index: 9999;
-    font-family: system-ui, -apple-system, sans-serif;
-  }
-  #pre-fab-opts {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-    gap: 10px;
-    opacity: 0;
-    transform: translateY(8px);
-    transition: opacity .25s, transform .25s;
-    pointer-events: none;
-  }
-  #pre-fab-opts.open {
-    opacity: 1;
-    transform: translateY(0);
-    pointer-events: all;
-  }
-  .pre-fab-row {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
-  .pre-fab-pill {
-    background: #16324f;
-    color: #fff;
-    font-size: 13px;
-    font-weight: 500;
-    padding: 9px 18px;
-    border-radius: 24px;
-    white-space: nowrap;
-    cursor: pointer;
-    border: none;
-    letter-spacing: 0.01em;
-  }
-  .pre-fab-pill:hover { background: #1e4570; }
-  .pre-fab-btn {
-    width: 52px;
-    height: 52px;
-    border-radius: 50%;
-    border: none;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: transform .15s;
-    flex-shrink: 0;
-  }
-  .pre-fab-btn:hover { transform: scale(1.08); }
-  .pre-fab-btn.chat {
-    background: #c9a14a;
-    box-shadow: 0 0 0 4px rgba(201,161,74,0.2);
-  }
-  .pre-fab-btn.call {
-    background: #16324f;
-    border: 2px solid #c9a14a;
-    box-shadow: 0 0 0 4px rgba(22,50,79,0.25);
-  }
-  #pre-fab-main {
-    width: 60px;
-    height: 60px;
-    border-radius: 50%;
-    border: 2px solid rgba(201,161,74,0.6);
-    cursor: pointer;
-    background: #16324f;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: transform .2s;
-    box-shadow: 0 0 0 5px rgba(22,50,79,0.25), 0 8px 24px rgba(0,0,0,0.25);
-  }
-  #pre-fab-main:hover { transform: scale(1.06); }
-  #pre-fab-main svg { transition: transform .3s; }
-  #pre-fab-main.open svg { transform: rotate(45deg); }
-
-  /* Push n8n chat window above the FAB */
-  .chat-window {
-    bottom: 90px !important;
-    right: 24px !important;
-    top: auto !important;
-  }
-</style>
-
-<!-- 5. FAB markup -->
-<div id="pre-fab">
-  <div id="pre-fab-opts">
-
-    <div class="pre-fab-row">
-      <button class="pre-fab-pill" id="pillChat">Chat with Ana</button>
-      <button class="pre-fab-btn chat" id="btnChat" aria-label="Chat with Ana">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
-        </svg>
-      </button>
-    </div>
-
-    <div class="pre-fab-row">
-      <button class="pre-fab-pill" id="pillCall">Call Ana</button>
-      <button class="pre-fab-btn call" id="btnCall" aria-label="Call Ana">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#c9a14a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M22 16.92v3a2 2 0 0 1-2.18 2A19.79 19.79 0 0 1 11.6 19a19.5 19.5 0 0 1-6-6A19.79 19.79 0 0 1 3.12 4.18 2 2 0 0 1 5.09 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L9.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/>
-        </svg>
-      </button>
-    </div>
-
-  </div>
-
-  <button id="pre-fab-main" aria-label="Open Ana" aria-expanded="false">
-    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#c9a14a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-      <path d="M12 8V4H8"/>
-      <rect width="16" height="12" x="4" y="8" rx="2"/>
-      <path d="M2 14h2"/>
-      <path d="M20 14h2"/>
-      <path d="M15 13v2"/>
-      <path d="M9 13v2"/>
-    </svg>
-  </button>
-</div>
-
-<!-- 6. Logic -->
-<script type="module">
-  import { createChat } from 'https://cdn.jsdelivr.net/npm/@n8n/chat/dist/chat.bundle.es.js';
-
-  const WEBHOOK = 'https://n8n.patom.dev/webhook/b1f5269f-a52e-46e7-aff2-ea4103f5eae0/chat';
-  const LOGGER  = 'https://n8n.patom.dev/webhook/website-chat-logger';
-
-  function getCid() {
-    let id = localStorage.getItem('paradise_chat_conversation_id');
-    if (id && id.startsWith('website_')) {
-      id = id.replace(/^website_/, '');
-      localStorage.setItem('paradise_chat_conversation_id', id);
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Paradise Chat Test</title>
+  <link href="https://cdn.jsdelivr.net/npm/@n8n/chat/dist/style.css" rel="stylesheet" />
+  <style>
+    body {
+      font-family: system-ui, sans-serif;
+      padding: 3rem;
+      background: #f6f7f9;
     }
-    if (!id) { id = crypto.randomUUID(); localStorage.setItem('paradise_chat_conversation_id', id); }
-    return id;
-  }
-
-  async function logMsg(role, text) {
-    const clean = String(text || '').replace(/\s+/g, ' ').trim();
-    if (!clean) return;
-    try {
-      await fetch(LOGGER, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          conversation_id: getCid(),
-          role,
-          message: clean,
-          timestamp: new Date().toISOString(),
-          name: null,
-          phone_number: null,
-          email: null,
-          label: 'website_chatbot',
-          source: window.location.href,
-          user_agent: navigator.userAgent
-        })
-      });
-    } catch(e) { console.error('Logger:', e); }
-  }
-
-  const fabMain  = document.getElementById('pre-fab-main');
-  const fabOpts  = document.getElementById('pre-fab-opts');
-  const btnChat  = document.getElementById('btnChat');
-  const pillChat = document.getElementById('pillChat');
-  const btnCall  = document.getElementById('btnCall');
-  const pillCall = document.getElementById('pillCall');
-  const vapi     = document.getElementById('vapiWidget');
-
-  let menuOpen   = false;
-  let chatLoaded = false;
-
-  function toggleMenu() {
-    menuOpen = !menuOpen;
-    fabOpts.classList.toggle('open', menuOpen);
-    fabMain.classList.toggle('open', menuOpen);
-    fabMain.setAttribute('aria-expanded', menuOpen);
-    if (!menuOpen && vapi) vapi.style.display = 'none';
-  }
-
-  function openChat() {
-    menuOpen = false;
-    fabOpts.classList.remove('open');
-    fabMain.classList.remove('open');
-    if (vapi) vapi.style.display = 'none';
-
-    if (!chatLoaded) {
-      chatLoaded = true;
-      createChat({
-        webhookUrl: WEBHOOK,
-        mode: 'window',
-        showWelcomeScreen: false,
-        chatSessionKey: 'sessionId',
-        chatInputKey: 'chatInput',
-        metadata: { conversation_id: getCid(), source: window.location.href },
-        initialMessages: [
-          "Hi, I'm Ana 👋 your Costa Blanca property guide.",
-          "Tell me what you're after — buy, sell, or a valuation — and I'll take it from there. Feel free to write in English, Español, Nederlands, Deutsch or Français 🌍"
-        ],
-        i18n: {
-          en: {
-            title: "Let's find your paradise",
-            subtitle: "Ana's here 24/7 to find your Costa Blanca property",
-            footer: '',
-            getStarted: 'New Conversation',
-            inputPlaceholder: 'Type your message…',
-          }
-        }
-      });
-
-      const logged = new Set();
-      new MutationObserver(() => {
-        document.querySelectorAll('.chat-message').forEach(el => {
-          const role = el.classList.contains('chat-message-from-user') ? 'user'
-                     : el.classList.contains('chat-message-from-bot')  ? 'bot' : null;
-          const text = (el.innerText || '').replace(/\s+/g, ' ').trim();
-          if (!role || !text) return;
-          if (text.includes("Hi, I'm Ana") || text.includes("Tell me what you're after")) return;
-          const key = getCid() + ':' + role + ':' + text;
-          if (logged.has(key)) return;
-          logged.add(key);
-          logMsg(role, text);
-        });
-      }).observe(document.body, { childList: true, subtree: true, characterData: true });
+    /* ---- Brand colors + header sizing ---- */
+    :root {
+      --chat--color--primary: #16324f;
+      --chat--color--primary-shade-50: #122a42;
+      --chat--color--secondary: #c9a14a;
+      --chat--color-secondary-shade-50: #b8923f;
+      --chat--color-dark: #16324f;
+      --chat--border-radius: 12px;
+      --chat--toggle--background: #16324f;
+      --chat--message--user--background: #c9a14a;
+      --chat--button--background--primary: #c9a14a;
+      --chat--header--padding: 1.25rem 1.5rem;
+      --chat--heading--font-size: 1.7em;
+      --chat--subtitle--line-height: 1.4;
     }
-  }
-
-  function openCall() {
-    menuOpen = false;
-    fabOpts.classList.remove('open');
-    fabMain.classList.remove('open');
-    if (vapi) {
-      vapi.style.display  = 'block';
-      vapi.style.position = 'fixed';
-      vapi.style.bottom   = '90px';
-      vapi.style.right    = '24px';
-      vapi.style.zIndex   = '9998';
+    /* ---- Centered header: logo → title → subtitle ---- */
+    .chat-header {
+      display: flex !important;
+      flex-direction: column !important;
+      align-items: center !important;
+      text-align: center !important;
+      gap: 4px;
     }
-  }
+    .chat-header::before {
+      content: "";
+      display: block;
+      width: 150px;
+      height: 46px;
+      margin: 0 auto 4px;
+      background-image: url("https://www.paradiserealestate.es/crm/pages/agencies/paradisepro/assets/logofooter.svg");
+      background-size: contain;
+      background-repeat: no-repeat;
+      background-position: center;
+    }
+    .chat-header h1 { margin: 0 !important; line-height: 1.15 !important; }
+    .chat-header p { margin: 0 !important; opacity: 0.9; }
 
-  fabMain.addEventListener('click', toggleMenu);
-  btnChat.addEventListener('click', openChat);
-  pillChat.addEventListener('click', openChat);
-  btnCall.addEventListener('click', openCall);
-  pillCall.addEventListener('click', openCall);
-</script>
+    /* ---- Message avatars ---- */
+    .chat-message {
+      position: relative !important;
+      overflow: visible !important;   /* the fix — was clipping the avatar */
+    }
+    /* Ana (bot) — navy circle, left of her messages */
+    .chat-message-from-bot { margin-left: 46px; }
+    .chat-message-from-bot::before {
+      content: "";
+      position: absolute;
+      left: -46px;
+      bottom: 0;
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      background-color: #16324f;
+      background-image: url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='18'%20height='18'%20viewBox='0%200%2024%2024'%20fill='none'%20stroke='white'%20stroke-width='2'%20stroke-linecap='round'%20stroke-linejoin='round'%3E%3Cpath%20d='M12%208V4H8'/%3E%3Crect%20width='16'%20height='12'%20x='4'%20y='8'%20rx='2'/%3E%3Cpath%20d='M2%2014h2'/%3E%3Cpath%20d='M20%2014h2'/%3E%3Cpath%20d='M15%2013v2'/%3E%3Cpath%20d='M9%2013v2'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: center;
+      background-size: 18px;
+    }
+    /* User — gold circle, right of their messages */
+    .chat-message-from-user { margin-right: 46px; }
+    .chat-message-from-user::before {
+      content: "";
+      position: absolute;
+      right: -46px;
+      bottom: 0;
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      background-color: #c9a14a;
+      background-image: url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='18'%20height='18'%20viewBox='0%200%2024%2024'%20fill='none'%20stroke='white'%20stroke-width='2'%20stroke-linecap='round'%20stroke-linejoin='round'%3E%3Cpath%20d='M19%2021v-2a4%204%200%200%200-4-4H9a4%204%200%200%200-4%204v2'/%3E%3Ccircle%20cx='12'%20cy='7'%20r='4'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: center;
+      background-size: 18px;
+    }
+  </style>
+</head>
+<body>
+  <script type="module">
+    import { createChat } from 'https://cdn.jsdelivr.net/npm/@n8n/chat/dist/chat.bundle.es.js';
+    createChat({
+      webhookUrl: 'https://n8n.patom.dev/webhook/b1f5269f-a52e-46e7-aff2-ea4103f5eae0/chat',
+      mode: 'window',
+      showWelcomeScreen: false,
+      initialMessages: [
+        "Hi, I'm Ana 👋 your Costa Blanca property guide.",
+        "Tell me what you're after — buy, sell, or a valuation — and I'll take it from there. Feel free to write in English, Español, Nederlands, Deutsch or Français 🌍"
+      ],
+      i18n: {
+        en: {
+          title: "Let's find your paradise",
+          subtitle: "Ana's here 24/7 to find your Costa Blanca property",
+          footer: '',
+          getStarted: 'New Conversation',
+          inputPlaceholder: 'Type your message…',
+        },
+      },
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    });
+  </script>
+</body>
+</html>
