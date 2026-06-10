@@ -1,837 +1,102 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<!-- Paradise Real Estate · Dual AI Widget -->
 
-  <title>Paradise AI Assistant Test</title>
+<!-- n8n Chat styles -->
+<link href="https://cdn.jsdelivr.net/npm/@n8n/chat/dist/style.css" rel="stylesheet"/>
 
-  <link href="https://cdn.jsdelivr.net/npm/@n8n/chat/dist/style.css" rel="stylesheet" />
+<!-- Vapi Widget -->
+<script src="https://unpkg.com/@vapi-ai/client-sdk-react/dist/embed/widget.umd.js" async type="text/javascript"></script>
+<vapi-widget
+  public-key="9585658c-2c48-4824-b6ec-aca50aac826e"
+  assistant-id="9b1c1276-181f-4255-a532-d20ee1d40b88"
+  mode="voice" theme="light" size="compact"
+  position="bottom-right"
+  main-label="Talk with Ana"
+  start-button-text="Start Call with Ana"
+  end-button-text="End Call"
+  button-base-color="#16324f"
+  button-accent-color="#c9a14a"
+  accent-color="#c9a14a"
+  style="display:none">
+</vapi-widget>
 
-  <style>
-    body {
-      margin: 0;
-      min-height: 100vh;
-      font-family: system-ui, sans-serif;
-      background: transparent;
-    }
+<style>
+  #pre-widget-fab{position:fixed;bottom:24px;right:24px;display:flex;flex-direction:column;align-items:flex-end;gap:12px;z-index:9999}
+  #pre-widget-fab .fab-main{width:56px;height:56px;border-radius:50%;background:#16324f;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 16px rgba(0,0,0,.22)}
+  #pre-widget-fab .fab-main svg{transition:transform .3s}
+  #pre-widget-fab .fab-main.open svg{transform:rotate(45deg)}
+  #pre-widget-fab .fab-options{display:flex;flex-direction:column;align-items:flex-end;gap:10px}
+  #pre-widget-fab .fab-opt{display:flex;align-items:center;gap:10px;opacity:0;transform:translateY(10px);transition:opacity .2s,transform .2s;pointer-events:none}
+  #pre-widget-fab .fab-options.vis .fab-opt:nth-child(1){opacity:1;transform:translateY(0);transition-delay:.05s;pointer-events:all}
+  #pre-widget-fab .fab-options.vis .fab-opt:nth-child(2){opacity:1;transform:translateY(0);pointer-events:all}
+  #pre-widget-fab .opt-lbl{background:#16324f;color:#fff;font-size:13px;padding:5px 12px;border-radius:20px;white-space:nowrap;font-family:system-ui,sans-serif}
+  #pre-widget-fab .opt-btn{width:46px;height:46px;border-radius:50%;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,.15)}
+  #pre-widget-fab .opt-btn.chat{background:#c9a14a}
+  #pre-widget-fab .opt-btn.call{background:#16324f;border:2px solid #c9a14a}
+  .pre-chat-panel{position:fixed;bottom:90px;right:24px;width:340px;max-height:540px;background:#fff;border-radius:16px;box-shadow:0 8px 32px rgba(0,0,0,.18);z-index:9998;overflow:hidden;display:none;flex-direction:column}
+  .pre-chat-panel.active{display:flex}
+</style>
 
-    :root {
-      --chat--color--primary: #16324f;
-      --chat--color--primary-shade-50: #122a42;
-      --chat--color--secondary: #c9a14a;
-      --chat--color-secondary-shade-50: #b8923f;
-      --chat--color-dark: #16324f;
-      --chat--border-radius: 12px;
-      --chat--toggle--background: #16324f;
-      --chat--message--user--background: #c9a14a;
-      --chat--button--background--primary: #c9a14a;
-      --chat--header--padding: 1.25rem 1.5rem;
-      --chat--heading--font-size: 1.7em;
-      --chat--subtitle--line-height: 1.4;
-    }
-
-    /* Hide n8n default launcher */
-    .chat-window-toggle {
-      opacity: 0 !important;
-      pointer-events: none !important;
-      width: 1px !important;
-      height: 1px !important;
-      overflow: hidden !important;
-    }
-
-    /* Hide n8n chat when voice mode is active */
-    body.paradise-voice-mode .chat-window,
-    body.paradise-voice-mode .chat-layout,
-    body.paradise-voice-mode .chat-window-wrapper,
-    body.paradise-voice-mode [class*="chat-window"],
-    body.paradise-voice-mode [class*="chat-layout"] {
-      display: none !important;
-      visibility: hidden !important;
-      pointer-events: none !important;
-    }
-
-    /* Hide Vapi's own green floating button */
-    .vapi-btn,
-    .vapi-btn-is-idle,
-    .vapi-btn-is-active,
-    .vapi-btn-is-speaking,
-    .vapi-btn-pill,
-    div[id*="vapi"],
-    button[class*="vapi"],
-    iframe[src*="vapi"] {
-      display: none !important;
-      opacity: 0 !important;
-      visibility: hidden !important;
-      pointer-events: none !important;
-    }
-
-    /* Do not hide our Paradise launcher */
-    #paradise-ai-launcher,
-    #paradise-ai-launcher *,
-    #paradise-ai-menu,
-    #paradise-ai-menu *,
-    #paradise-voice-status,
-    #paradise-voice-status * {
-      visibility: visible !important;
-      pointer-events: auto !important;
-    }
-
-    #paradise-ai-launcher {
-      position: fixed;
-      right: 24px;
-      bottom: 24px;
-      z-index: 999999;
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-    }
-
-    #paradise-ai-main-btn,
-    #paradise-ai-back-btn,
-    #paradise-ai-end-call-btn {
-      background: #16324f;
-      color: #ffffff;
-      border: none;
-      border-radius: 999px;
-      padding: 14px 20px;
-      font-size: 15px;
-      font-weight: 700;
-      cursor: pointer;
-      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.25);
-    }
-
-    #paradise-ai-back-btn {
-      display: none;
-      background: #c9a14a;
-      color: #16324f;
-    }
-
-    #paradise-ai-end-call-btn {
-      display: none;
-      background: #b42318;
-      color: #ffffff;
-      margin-left: 8px;
-    }
-
-    body.paradise-mode-selected #paradise-ai-main-btn {
-      display: none;
-    }
-
-    body.paradise-mode-selected #paradise-ai-back-btn {
-      display: inline-block;
-    }
-
-    body.paradise-call-active #paradise-ai-end-call-btn {
-      display: inline-block;
-    }
-
-    /* Icon-only options menu */
-    #paradise-ai-menu {
-      display: none;
-      position: absolute;
-      right: 0;
-      bottom: 64px;
-      background: #ffffff;
-      border-radius: 999px;
-      padding: 10px;
-      gap: 10px;
-      box-shadow: 0 18px 45px rgba(0, 0, 0, 0.22);
-      border: 1px solid rgba(22, 50, 79, 0.12);
-    }
-
-    #paradise-ai-menu.active {
-      display: flex;
-      align-items: center;
-    }
-
-    .paradise-ai-icon-option {
-      width: 56px;
-      height: 56px;
-      border: none;
-      border-radius: 50%;
-      cursor: pointer;
-      font-size: 25px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: transform 0.15s ease, box-shadow 0.15s ease;
-      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.18);
-    }
-
-    .paradise-ai-icon-option:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 12px 26px rgba(0, 0, 0, 0.22);
-    }
-
-    #paradise-open-chat {
-      background: #ffffff;
-      color: #16324f;
-    }
-
-    #paradise-open-voice {
-      background: #c9a14a;
-      color: #16324f;
-    }
-
-    /* Voice status card */
-    #paradise-voice-status {
-      display: none;
-      position: absolute;
-      right: 0;
-      bottom: 64px;
-      width: 280px;
-      background: #ffffff;
-      border-radius: 18px;
-      box-shadow: 0 18px 45px rgba(0, 0, 0, 0.22);
-      overflow: hidden;
-      border: 1px solid rgba(22, 50, 79, 0.12);
-    }
-
-    #paradise-voice-status.active {
-      display: block;
-    }
-
-    .paradise-voice-status-header {
-      background: #16324f;
-      color: #ffffff;
-      padding: 16px;
-      text-align: center;
-    }
-
-    .paradise-voice-status-header strong {
-      display: block;
-      font-size: 16px;
-    }
-
-    .paradise-voice-status-body {
-      padding: 18px;
-      color: #555555;
-      font-size: 14px;
-      line-height: 1.45;
-      text-align: center;
-    }
-
-    .paradise-pulse {
-      width: 46px;
-      height: 46px;
-      margin: 0 auto 12px;
-      border-radius: 50%;
-      background: #c9a14a;
-      animation: paradisePulse 1.4s infinite;
-    }
-
-    @keyframes paradisePulse {
-      0% {
-        transform: scale(0.95);
-        opacity: 0.75;
-      }
-
-      70% {
-        transform: scale(1.15);
-        opacity: 0.25;
-      }
-
-      100% {
-        transform: scale(0.95);
-        opacity: 0.75;
-      }
-    }
-
-    /* n8n chat header customization */
-    .chat-header {
-      display: flex !important;
-      flex-direction: column !important;
-      align-items: center !important;
-      text-align: center !important;
-      gap: 4px;
-    }
-
-    .chat-header::before {
-      content: "";
-      display: block;
-      width: 150px;
-      height: 46px;
-      margin: 0 auto 4px;
-      background-image: url("https://www.paradiserealestate.es/crm/pages/agencies/paradisepro/assets/logofooter.svg");
-      background-size: contain;
-      background-repeat: no-repeat;
-      background-position: center;
-    }
-
-    .chat-header h1 {
-      margin: 0 !important;
-      line-height: 1.15 !important;
-    }
-
-    .chat-header p {
-      margin: 0 !important;
-      opacity: 0.9;
-    }
-
-    .chat-message {
-      position: relative !important;
-      overflow: visible !important;
-    }
-
-    .chat-message-from-bot {
-      margin-left: 46px;
-    }
-
-    .chat-message-from-user {
-      margin-right: 46px;
-    }
-
-    @media (max-width: 600px) {
-      #paradise-ai-launcher {
-        right: 16px;
-        bottom: 16px;
-      }
-
-      #paradise-voice-status {
-        width: 255px;
-      }
-
-      #paradise-ai-main-btn,
-      #paradise-ai-back-btn,
-      #paradise-ai-end-call-btn {
-        padding: 13px 17px;
-        font-size: 14px;
-      }
-
-      .paradise-ai-icon-option {
-        width: 52px;
-        height: 52px;
-        font-size: 23px;
-      }
-    }
-  </style>
-</head>
-
-<body>
-  <div id="paradise-ai-launcher">
-
-    <!-- Icon-only menu -->
-    <div id="paradise-ai-menu">
-      <button
-        class="paradise-ai-icon-option"
-        id="paradise-open-chat"
-        title="Chat with Ana"
-        aria-label="Chat with Ana">
-        💬
-      </button>
-
-      <button
-        class="paradise-ai-icon-option"
-        id="paradise-open-voice"
-        title="Call Ana"
-        aria-label="Call Ana">
-        📞
+<div id="pre-widget-fab">
+  <div class="fab-options" id="pwFabOpts">
+    <div class="fab-opt">
+      <span class="opt-lbl">Chat with Ana</span>
+      <button class="opt-btn chat" id="pwOpenChat" aria-label="Open chat">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
       </button>
     </div>
-
-    <!-- Voice interface -->
-    <div id="paradise-voice-status">
-      <div class="paradise-voice-status-header">
-        <strong>Ana Voice Assistant</strong>
-      </div>
-
-      <div class="paradise-voice-status-body">
-        <div class="paradise-pulse"></div>
-        <div id="paradise-voice-status-text">Connecting to Ana...</div>
-      </div>
+    <div class="fab-opt">
+      <span class="opt-lbl">Call Ana</span>
+      <button class="opt-btn call" id="pwOpenCall" aria-label="Start voice call">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#c9a14a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2A19.79 19.79 0 0 1 11.6 19a19.5 19.5 0 0 1-6-6A19.79 19.79 0 0 1 3.12 4.18 2 2 0 0 1 5.09 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L9.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+      </button>
     </div>
-
-    <button id="paradise-ai-main-btn">Talk to Ana</button>
-    <button id="paradise-ai-back-btn">← Back to options</button>
-    <button id="paradise-ai-end-call-btn">End call</button>
   </div>
+  <button class="fab-main" id="pwFabMain" aria-label="Open Ana" aria-expanded="false">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" id="pwFabIcon"><path d="M12 8V4H8"/><rect width="16" height="12" x="4" y="8" rx="2"/><path d="M2 14h2"/><path d="M20 14h2"/><path d="M15 13v2"/><path d="M9 13v2"/></svg>
+  </button>
+</div>
 
-  <!-- Vapi official script loader -->
-  <script>
-    const VAPI_PUBLIC_KEY = '9585658c-2c48-4824-b6ec-aca50aac826e';
-    const VAPI_ASSISTANT_ID = '9b1c1276-181f-4255-a532-d20ee1d40b88';
+<div class="pre-chat-panel" id="pwChatPanel"></div>
 
-    let paradiseVapiInstance = null;
-    let paradiseVapiLoading = false;
-    let paradiseCallActive = false;
+<script type="module">
+import { createChat } from 'https://cdn.jsdelivr.net/npm/@n8n/chat/dist/chat.bundle.es.js';
 
-    function hideVapiFloatingUi() {
-      const possibleVapiElements = document.querySelectorAll(
-        '.vapi-btn, .vapi-btn-is-idle, .vapi-btn-is-active, .vapi-btn-is-speaking, .vapi-btn-pill, div[id*="vapi"], button[class*="vapi"], iframe[src*="vapi"]'
-      );
+const WEBHOOK = 'https://n8n.patom.dev/webhook/b1f5269f-a52e-46e7-aff2-ea4103f5eae0/chat';
+function getCid(){let c=localStorage.getItem('paradise_cid');if(!c){c=crypto.randomUUID();localStorage.setItem('paradise_cid',c);}return c;}
+  const fab=document.getElementById('pwFabMain');
+const opts=document.getElementById('pwFabOpts');
+const icon=document.getElementById('pwFabIcon');
+const btnChat=document.getElementById('pwOpenChat');
+const btnCall=document.getElementById('pwOpenCall');
+const chatPanel=document.getElementById('pwChatPanel');
+const vapiWidget=document.querySelector('vapi-widget');
+let open=false,chatLoaded=false;
 
-      possibleVapiElements.forEach(function (element) {
-        if (element.closest('#paradise-ai-launcher')) return;
+fab.addEventListener('click',()=>{
+  open=!open;
+  opts.classList.toggle('vis',open);
+  fab.classList.toggle('open',open);
+  fab.setAttribute('aria-expanded',open);
+  if(!open){chatPanel.classList.remove('active');if(vapiWidget)vapiWidget.style.display='none';}
+});
 
-        element.style.display = 'none';
-        element.style.opacity = '0';
-        element.style.visibility = 'hidden';
-        element.style.pointerEvents = 'none';
-      });
-    }
-
-    function loadVapiOfficialScript() {
-      return new Promise(function (resolve, reject) {
-        if (window.vapiSDK) {
-          resolve(window.vapiSDK);
-          return;
-        }
-
-        if (paradiseVapiLoading) {
-          const checkInterval = setInterval(function () {
-            if (window.vapiSDK) {
-              clearInterval(checkInterval);
-              resolve(window.vapiSDK);
-            }
-
-            hideVapiFloatingUi();
-          }, 250);
-
-          setTimeout(function () {
-            clearInterval(checkInterval);
-            reject(new Error('Vapi SDK loading timeout'));
-          }, 10000);
-
-          return;
-        }
-
-        paradiseVapiLoading = true;
-
-        const script = document.createElement('script');
-        script.src = 'https://cdn.jsdelivr.net/gh/VapiAI/html-script-tag@latest/dist/assets/index.js';
-        script.async = true;
-        script.defer = true;
-
-        script.onload = function () {
-          paradiseVapiLoading = false;
-
-          hideVapiFloatingUi();
-
-          if (window.vapiSDK) {
-            resolve(window.vapiSDK);
-          } else {
-            reject(new Error('Vapi SDK loaded but window.vapiSDK not found'));
-          }
-        };
-
-        script.onerror = function () {
-          paradiseVapiLoading = false;
-          reject(new Error('Failed to load Vapi official script'));
-        };
-
-        document.body.appendChild(script);
-      });
-    }
-
-    async function getVapiInstance() {
-      if (paradiseVapiInstance) {
-        hideVapiFloatingUi();
-        return paradiseVapiInstance;
-      }
-
-      const sdk = await loadVapiOfficialScript();
-
-      paradiseVapiInstance = sdk.run({
-        apiKey: VAPI_PUBLIC_KEY,
-        assistant: VAPI_ASSISTANT_ID,
-        config: {
-          position: 'bottom-right',
-          theme: 'light'
-        }
-      });
-
-      setTimeout(hideVapiFloatingUi, 100);
-      setTimeout(hideVapiFloatingUi, 300);
-      setTimeout(hideVapiFloatingUi, 800);
-      setTimeout(hideVapiFloatingUi, 1500);
-      setTimeout(hideVapiFloatingUi, 2500);
-
-      return paradiseVapiInstance;
-    }
-  </script>
-
-  <!-- Launcher logic -->
-  <script>
-    const mainBtn = document.getElementById('paradise-ai-main-btn');
-    const backBtn = document.getElementById('paradise-ai-back-btn');
-    const endCallBtn = document.getElementById('paradise-ai-end-call-btn');
-    const menu = document.getElementById('paradise-ai-menu');
-    const chatBtn = document.getElementById('paradise-open-chat');
-    const voiceBtn = document.getElementById('paradise-open-voice');
-    const voiceStatus = document.getElementById('paradise-voice-status');
-    const voiceStatusText = document.getElementById('paradise-voice-status-text');
-
-    function hideN8nChatHard() {
-      document.body.classList.add('paradise-voice-mode');
-
-      const possibleChatElements = document.querySelectorAll(
-        '.chat-window, .chat-layout, .chat-window-wrapper, [class*="chat-window"], [class*="chat-layout"]'
-      );
-
-      possibleChatElements.forEach(function (element) {
-        element.style.display = 'none';
-        element.style.visibility = 'hidden';
-        element.style.pointerEvents = 'none';
-      });
-    }
-
-    function showN8nChatAgain() {
-      document.body.classList.remove('paradise-voice-mode');
-
-      const possibleChatElements = document.querySelectorAll(
-        '.chat-window, .chat-layout, .chat-window-wrapper, [class*="chat-window"], [class*="chat-layout"]'
-      );
-
-      possibleChatElements.forEach(function (element) {
-        element.style.display = '';
-        element.style.visibility = '';
-        element.style.pointerEvents = '';
-      });
-    }
-
-    function openN8nChat() {
-      showN8nChatAgain();
-
-      if (typeof window.paradiseOpenChat === 'function') {
-        window.paradiseOpenChat();
-        return;
-      }
-
-      const selectors = [
-        '.chat-window-toggle',
-        '.chat-window-toggle button',
-        '[aria-label="Open chat"]',
-        '[aria-label="Toggle chat"]'
-      ];
-
-      for (const selector of selectors) {
-        const button = document.querySelector(selector);
-
-        if (button) {
-          button.click();
-          return;
-        }
-      }
-
-      console.warn('n8n chat button not found yet.');
-    }
-
-    function closeN8nChatIfOpen() {
-      const selectors = [
-        '[aria-label="Close chat"]',
-        '[aria-label="Toggle chat"]',
-        '.chat-window-toggle',
-        '.chat-window-toggle button'
-      ];
-
-      for (const selector of selectors) {
-        const button = document.querySelector(selector);
-
-        if (button) {
-          button.click();
-          break;
-        }
-      }
-    }
-
-    async function startVapiCall() {
-      menu.classList.remove('active');
-
-      closeN8nChatIfOpen();
-      hideN8nChatHard();
-      hideVapiFloatingUi();
-
-      document.body.classList.add('paradise-mode-selected');
-      document.body.classList.add('paradise-call-active');
-
-      voiceStatus.classList.add('active');
-      voiceStatusText.textContent = 'Connecting to Ana...';
-
-      try {
-        const instance = await getVapiInstance();
-
-        hideVapiFloatingUi();
-
-        if (instance && typeof instance.start === 'function') {
-          paradiseCallActive = true;
-          voiceStatusText.textContent = 'Starting call. Please allow microphone access...';
-
-          await instance.start();
-
-          hideVapiFloatingUi();
-
-          voiceStatusText.textContent = 'You are connected with Ana. You can speak now.';
-          return;
-        }
-
-        const possibleButtons = document.querySelectorAll(
-          '.vapi-btn, .vapi-btn-is-idle, .vapi-btn-pill, button[class*="vapi"]'
-        );
-
-        for (const button of possibleButtons) {
-          if (button.closest('#paradise-ai-launcher')) continue;
-
-          button.click();
-
-          paradiseCallActive = true;
-          voiceStatusText.textContent = 'Starting call. Please allow microphone access...';
-
-          setTimeout(hideVapiFloatingUi, 100);
-          setTimeout(hideVapiFloatingUi, 300);
-          setTimeout(hideVapiFloatingUi, 800);
-
-          return;
-        }
-
-        throw new Error('Could not find Vapi start method or button.');
-      } catch (error) {
-        console.error('Vapi start error:', error);
-        paradiseCallActive = false;
-        document.body.classList.remove('paradise-call-active');
-        voiceStatusText.textContent = 'Voice could not start. Please check microphone permission, HTTPS, and Vapi settings.';
-      }
-    }
-
-    function stopVapiCall() {
-      try {
-        if (paradiseVapiInstance && typeof paradiseVapiInstance.stop === 'function') {
-          paradiseVapiInstance.stop();
-        }
-      } catch (error) {
-        console.error('Vapi stop error:', error);
-      }
-
-      paradiseCallActive = false;
-      document.body.classList.remove('paradise-call-active');
-      voiceStatusText.textContent = 'Call ended.';
-
-      hideVapiFloatingUi();
-    }
-
-    mainBtn.addEventListener('click', function () {
-      voiceStatus.classList.remove('active');
-      menu.classList.toggle('active');
-      hideVapiFloatingUi();
+btnChat.addEventListener('click',()=>{
+  opts.classList.remove('vis');open=false;fab.classList.remove('open');
+  if(vapiWidget)vapiWidget.style.display='none';
+  chatPanel.classList.add('active');
+  if(!chatLoaded){chatLoaded=true;
+    createChat({webhookUrl:WEBHOOK,mode:'window',showWelcomeScreen:false,
+      chatSessionKey:'sessionId',chatInputKey:'chatInput',
+      metadata:{conversation_id:getCid(),source:window.location.href},
+      initialMessages:["Hi, I'm Ana 👋 your Costa Blanca property guide.","Tell me what you're after — buy, sell, or a valuation 🌍"],
+      i18n:{en:{title:"Let's find your paradise",subtitle:"Ana's here 24/7",footer:'',getStarted:'New Conversation',inputPlaceholder:'Type your message…'}}
     });
+  }
+});
 
-    chatBtn.addEventListener('click', function () {
-      menu.classList.remove('active');
-      voiceStatus.classList.remove('active');
-
-      if (paradiseCallActive) {
-        stopVapiCall();
-      }
-
-      document.body.classList.add('paradise-mode-selected');
-      document.body.classList.remove('paradise-call-active');
-
-      showN8nChatAgain();
-
-      setTimeout(function () {
-        openN8nChat();
-      }, 300);
-    });
-
-    voiceBtn.addEventListener('click', function () {
-      hideVapiFloatingUi();
-      startVapiCall();
-    });
-
-    backBtn.addEventListener('click', function () {
-      if (paradiseCallActive) {
-        stopVapiCall();
-      }
-
-      closeN8nChatIfOpen();
-      showN8nChatAgain();
-
-      document.body.classList.remove('paradise-mode-selected');
-      document.body.classList.remove('paradise-call-active');
-
-      voiceStatus.classList.remove('active');
-      menu.classList.add('active');
-
-      hideVapiFloatingUi();
-    });
-
-    endCallBtn.addEventListener('click', function () {
-      stopVapiCall();
-    });
-
-    document.addEventListener('click', function (event) {
-      const launcher = document.getElementById('paradise-ai-launcher');
-
-      if (!launcher.contains(event.target)) {
-        menu.classList.remove('active');
-      }
-
-      hideVapiFloatingUi();
-    });
-
-    setInterval(hideVapiFloatingUi, 1000);
-  </script>
-
-  <!-- n8n Chat + Logger -->
-  <script type="module">
-    import { createChat } from 'https://cdn.jsdelivr.net/npm/@n8n/chat/dist/chat.bundle.es.js';
-
-    const CHAT_WEBHOOK_URL = 'https://n8n.patom.dev/webhook/b1f5269f-a52e-46e7-aff2-ea4103f5eae0/chat';
-    const LOGGER_WEBHOOK_URL = 'https://n8n.patom.dev/webhook/website-chat-logger';
-
-    function getConversationId() {
-      let conversationId = localStorage.getItem('paradise_chat_conversation_id');
-
-      if (conversationId && conversationId.startsWith('website_')) {
-        conversationId = conversationId.replace(/^website_/, '');
-        localStorage.setItem('paradise_chat_conversation_id', conversationId);
-      }
-
-      if (!conversationId) {
-        conversationId = crypto.randomUUID();
-        localStorage.setItem('paradise_chat_conversation_id', conversationId);
-      }
-
-      return conversationId;
-    }
-
-    async function logWebsiteChatMessage(role, message, extraData = {}) {
-      const cleanMessage = String(message || '')
-        .replace(/\r?\n|\r/g, ' ')
-        .replace(/\s+/g, ' ')
-        .trim();
-
-      if (!cleanMessage) return;
-
-      try {
-        await fetch(LOGGER_WEBHOOK_URL, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            conversation_id: getConversationId(),
-            role: role,
-            message: cleanMessage,
-            timestamp: new Date().toISOString(),
-            name: extraData.name || null,
-            phone_number: extraData.phone_number || null,
-            email: extraData.email || null,
-            label: 'website_chatbot',
-            source: window.location.href,
-            user_agent: navigator.userAgent
-          })
-        });
-      } catch (error) {
-        console.error('Chat logger failed:', error);
-      }
-    }
-
-    createChat({
-      webhookUrl: CHAT_WEBHOOK_URL,
-      mode: 'window',
-      showWelcomeScreen: false,
-      chatSessionKey: 'sessionId',
-      chatInputKey: 'chatInput',
-      metadata: {
-        conversation_id: getConversationId(),
-        source: window.location.href
-      },
-      initialMessages: [
-        "Hi, I'm Ana 👋 your Costa Blanca property guide.",
-        "Tell me what you're after — buy, sell, or a valuation — and I'll take it from there. Feel free to write in English, Español, Nederlands, Deutsch or Français 🌍"
-      ],
-      i18n: {
-        en: {
-          title: "Let's find your paradise",
-          subtitle: "Ana's here 24/7 to find your Costa Blanca property",
-          footer: '',
-          getStarted: 'New Conversation',
-          inputPlaceholder: 'Type your message…'
-        }
-      }
-    });
-
-    window.paradiseOpenChat = function () {
-      const selectors = [
-        '.chat-window-toggle',
-        '.chat-window-toggle button',
-        '[aria-label="Open chat"]',
-        '[aria-label="Toggle chat"]'
-      ];
-
-      for (const selector of selectors) {
-        const button = document.querySelector(selector);
-
-        if (button) {
-          button.click();
-          return;
-        }
-      }
-
-      console.warn('n8n chat button not found yet.');
-    };
-
-    const alreadyLoggedMessages = new Set();
-
-    function getMessageText(messageEl) {
-      const text = messageEl.innerText || messageEl.textContent || '';
-
-      return String(text)
-        .replace(/\r?\n|\r/g, ' ')
-        .replace(/\s+/g, ' ')
-        .trim();
-    }
-
-    function getMessageRole(messageEl) {
-      if (messageEl.classList.contains('chat-message-from-user')) {
-        return 'user';
-      }
-
-      if (messageEl.classList.contains('chat-message-from-bot')) {
-        return 'bot';
-      }
-
-      return null;
-    }
-
-    function logExistingChatMessages() {
-      const messageElements = document.querySelectorAll('.chat-message');
-
-      messageElements.forEach((messageEl) => {
-        const role = getMessageRole(messageEl);
-        const cleanText = getMessageText(messageEl);
-
-        if (!role || !cleanText) return;
-
-        const isInitialMessage =
-          cleanText.includes("Hi, I'm Ana") ||
-          cleanText.includes("Tell me what you're after");
-
-        if (isInitialMessage) return;
-
-        const uniqueKey = getConversationId() + ':' + role + ':' + cleanText;
-
-        if (alreadyLoggedMessages.has(uniqueKey)) return;
-
-        alreadyLoggedMessages.add(uniqueKey);
-        logWebsiteChatMessage(role, cleanText);
-      });
-    }
-
-    function startChatMessageObserver() {
-      const observer = new MutationObserver(function () {
-        logExistingChatMessages();
-      });
-
-      observer.observe(document.body, {
-        childList: true,
-        subtree: true,
-        characterData: true
-      });
-
-      logExistingChatMessages();
-    }
-
-    setTimeout(startChatMessageObserver, 1200);
-  </script>
-</body>
-</html>
+btnCall.addEventListener('click',()=>{
+  opts.classList.remove('vis');open=false;fab.classList.remove('open');
+  chatPanel.classList.remove('active');
+  if(vapiWidget){vapiWidget.style.display='block';vapiWidget.style.position='fixed';vapiWidget.style.bottom='90px';vapiWidget.style.right='24px';}
+});
+</script>
