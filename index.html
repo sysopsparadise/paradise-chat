@@ -4,8 +4,9 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-  <title>Paradise Chat Test</title>
+  <title>Paradise Chat + Voice Test</title>
 
+  <!-- SOOPREMA / WEBSITE EMBED BLOCK 1 OF 4: n8n Chat CSS -->
   <link href="https://cdn.jsdelivr.net/npm/@n8n/chat/dist/style.css" rel="stylesheet" />
 
   <style>
@@ -15,7 +16,26 @@
       background: #f6f7f9;
     }
 
-    /* ---- Brand colors + header sizing ---- */
+    .demo-page-content {
+      max-width: 760px;
+      margin: 0 auto;
+      background: white;
+      padding: 36px;
+      border-radius: 20px;
+      box-shadow: 0 12px 35px rgba(0, 0, 0, 0.08);
+    }
+
+    .demo-page-content h1 {
+      color: #16324f;
+      margin-top: 0;
+    }
+
+    .demo-page-content p {
+      color: #555;
+      line-height: 1.6;
+    }
+
+    /* SOOPREMA / WEBSITE EMBED BLOCK 2 OF 4: Widget Styling */
     :root {
       --chat--color--primary: #16324f;
       --chat--color--primary-shade-50: #122a42;
@@ -31,7 +51,156 @@
       --chat--subtitle--line-height: 1.4;
     }
 
-    /* ---- Centered header: logo → title → subtitle ---- */
+    /*
+      Hide the default n8n chat toggle.
+      We open it using our custom Paradise launcher.
+    */
+    .chat-window-toggle {
+      opacity: 0 !important;
+      pointer-events: none !important;
+      width: 0 !important;
+      height: 0 !important;
+      overflow: hidden !important;
+    }
+
+    /*
+      Hide Vapi widget first.
+      It appears only after user clicks "Call Ana".
+    */
+    vapi-widget {
+      opacity: 0 !important;
+      pointer-events: none !important;
+      transform: translateY(12px);
+      transition: opacity 0.2s ease, transform 0.2s ease;
+    }
+
+    body.paradise-voice-active vapi-widget {
+      opacity: 1 !important;
+      pointer-events: auto !important;
+      transform: translateY(0);
+    }
+
+    /*
+      Main Paradise launcher.
+    */
+    #paradise-ai-launcher {
+      position: fixed;
+      right: 24px;
+      bottom: 24px;
+      z-index: 999999;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    /*
+      Move our back button up when Vapi is visible,
+      so both buttons do not overlap.
+    */
+    body.paradise-voice-active #paradise-ai-launcher {
+      bottom: 95px;
+    }
+
+    #paradise-ai-main-btn,
+    #paradise-ai-back-btn {
+      background: #16324f;
+      color: #ffffff;
+      border: none;
+      border-radius: 999px;
+      padding: 14px 20px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.25);
+    }
+
+    #paradise-ai-back-btn {
+      display: none;
+      background: #c9a14a;
+      color: #16324f;
+    }
+
+    /*
+      When user chooses Chat or Call:
+      hide "Talk to Ana", show "Back to options".
+    */
+    body.paradise-mode-selected #paradise-ai-main-btn {
+      display: none;
+    }
+
+    body.paradise-mode-selected #paradise-ai-back-btn {
+      display: inline-block;
+    }
+
+    #paradise-ai-menu {
+      display: none;
+      position: absolute;
+      right: 0;
+      bottom: 62px;
+      width: 275px;
+      background: #ffffff;
+      border-radius: 18px;
+      box-shadow: 0 18px 45px rgba(0, 0, 0, 0.22);
+      overflow: hidden;
+      border: 1px solid rgba(22, 50, 79, 0.12);
+    }
+
+    #paradise-ai-menu.active {
+      display: block;
+    }
+
+    .paradise-ai-header {
+      background: #16324f;
+      color: #ffffff;
+      padding: 16px;
+      text-align: center;
+    }
+
+    .paradise-ai-header img {
+      width: 135px;
+      margin-bottom: 8px;
+    }
+
+    .paradise-ai-header strong {
+      display: block;
+      font-size: 16px;
+    }
+
+    .paradise-ai-header span {
+      display: block;
+      font-size: 13px;
+      opacity: 0.9;
+      margin-top: 4px;
+    }
+
+    .paradise-ai-option {
+      width: 100%;
+      border: none;
+      background: #ffffff;
+      padding: 16px;
+      text-align: left;
+      cursor: pointer;
+      border-bottom: 1px solid #eeeeee;
+    }
+
+    .paradise-ai-option:hover {
+      background: #f7f4ec;
+    }
+
+    .paradise-ai-option strong {
+      display: block;
+      color: #16324f;
+      font-size: 15px;
+      margin-bottom: 4px;
+    }
+
+    .paradise-ai-option span {
+      color: #555555;
+      font-size: 13px;
+      line-height: 1.35;
+    }
+
+    /*
+      n8n Chat Header Customization
+    */
     .chat-header {
       display: flex !important;
       flex-direction: column !important;
@@ -62,13 +231,14 @@
       opacity: 0.9;
     }
 
-    /* ---- Message avatars ---- */
+    /*
+      n8n Chat Message Avatars
+    */
     .chat-message {
       position: relative !important;
       overflow: visible !important;
     }
 
-    /* Ana (bot) — navy circle, left of her messages */
     .chat-message-from-bot {
       margin-left: 46px;
     }
@@ -88,7 +258,6 @@
       background-size: 18px;
     }
 
-    /* User — gold circle, right of their messages */
     .chat-message-from-user {
       margin-right: 46px;
     }
@@ -107,10 +276,95 @@
       background-position: center;
       background-size: 18px;
     }
+
+    @media (max-width: 600px) {
+      body {
+        padding: 1rem;
+      }
+
+      #paradise-ai-launcher {
+        right: 16px;
+        bottom: 16px;
+      }
+
+      body.paradise-voice-active #paradise-ai-launcher {
+        bottom: 90px;
+      }
+
+      #paradise-ai-menu {
+        width: 255px;
+      }
+
+      #paradise-ai-main-btn,
+      #paradise-ai-back-btn {
+        padding: 13px 17px;
+        font-size: 14px;
+      }
+    }
   </style>
 </head>
 
 <body>
+  <!-- DEMO CONTENT ONLY: Remove this section when adding to Sooprema -->
+  <main class="demo-page-content">
+    <h1>Paradise Real Estate AI Assistant Test</h1>
+    <p>
+      This page is only for testing the combined Ana chat and voice launcher.
+      Use the floating button in the bottom-right corner.
+    </p>
+    <p>
+      On the real Sooprema website, remove this demo content and only add the marked embed blocks.
+    </p>
+  </main>
+
+  <!-- SOOPREMA / WEBSITE EMBED BLOCK 3 OF 4: Vapi Voice Widget -->
+  <script
+    src="https://unpkg.com/@vapi-ai/client-sdk-react/dist/embed/widget.umd.js"
+    async
+    type="text/javascript">
+  </script>
+
+  <vapi-widget
+    public-key="9585658c-2c48-4824-b6ec-aca50aac826e"
+    assistant-id="9b1c1276-181f-4255-a532-d20ee1d40b88"
+    mode="voice"
+    theme="light"
+    size="compact"
+    position="bottom-right"
+    main-label="Talk with Ana"
+    start-button-text="Start Call with Ana"
+    end-button-text="End Call"
+    empty-voice-message="Ana - AI Receptionist. Ask about properties in Jávea or Dénia, pricing, or viewings."
+    button-base-color="#16324f"
+    button-accent-color="#ffffff"
+    accent-color="#c9a14a">
+  </vapi-widget>
+
+  <!-- Custom Paradise Launcher -->
+  <div id="paradise-ai-launcher">
+    <div id="paradise-ai-menu">
+      <div class="paradise-ai-header">
+        <img src="https://www.paradiserealestate.es/crm/pages/agencies/paradisepro/assets/logofooter.svg" alt="Paradise Real Estate" />
+        <strong>Ana AI Assistant</strong>
+        <span>Choose how you want to speak with us</span>
+      </div>
+
+      <button class="paradise-ai-option" id="paradise-open-chat">
+        <strong>💬 Chat with Ana</strong>
+        <span>Ask property questions or start your enquiry by message.</span>
+      </button>
+
+      <button class="paradise-ai-option" id="paradise-open-voice">
+        <strong>📞 Call Ana</strong>
+        <span>Start a live voice conversation with our AI receptionist.</span>
+      </button>
+    </div>
+
+    <button id="paradise-ai-main-btn">Talk to Ana</button>
+    <button id="paradise-ai-back-btn">← Back to options</button>
+  </div>
+
+  <!-- SOOPREMA / WEBSITE EMBED BLOCK 4 OF 4: n8n Chat + Logger + Launcher Logic -->
   <script type="module">
     import { createChat } from 'https://cdn.jsdelivr.net/npm/@n8n/chat/dist/chat.bundle.es.js';
 
@@ -124,7 +378,7 @@
 
     /*
       Creates one stable anonymous conversation ID per visitor/browser.
-      This now stores only UUID, without "website_" prefix.
+      This stores only UUID, without "website_" prefix.
     */
     function getConversationId() {
       let conversationId = localStorage.getItem('paradise_chat_conversation_id');
@@ -204,7 +458,7 @@
 
       initialMessages: [
         "Hi, I'm Ana 👋 your Costa Blanca property guide.",
-        "Tell me what you're after buy, sell, or a valuation and I'll take it from there. Feel free to write in English, Español, Nederlands, Deutsch or Français 🌍"
+        "Tell me what you're after — buy, sell, or a valuation — and I'll take it from there. Feel free to write in English, Español, Nederlands, Deutsch or Français 🌍"
       ],
 
       i18n: {
@@ -298,6 +552,132 @@
       Wait for the n8n chat widget to render before observing messages.
     */
     setTimeout(startChatMessageObserver, 1200);
+
+    /*
+      Opens n8n chat by clicking its hidden default toggle.
+    */
+    function openN8nChat() {
+      const selectors = [
+        '.chat-window-toggle',
+        '.chat-window-toggle button',
+        '[aria-label="Open chat"]',
+        '[aria-label="Toggle chat"]'
+      ];
+
+      for (const selector of selectors) {
+        const button = document.querySelector(selector);
+
+        if (button) {
+          button.click();
+          return;
+        }
+      }
+
+      console.warn('n8n chat button not found yet. Try again in 1 second.');
+    }
+
+    /*
+      Optional: Try to close n8n chat when user goes back.
+      Different n8n versions use different close buttons, so this is best-effort.
+    */
+    function closeN8nChatIfOpen() {
+      const selectors = [
+        '.chat-window-toggle',
+        '.chat-window-toggle button',
+        '[aria-label="Close chat"]',
+        '[aria-label="Toggle chat"]'
+      ];
+
+      for (const selector of selectors) {
+        const button = document.querySelector(selector);
+
+        if (button) {
+          /*
+            Only click toggle when chat window appears to be open.
+          */
+          const chatWindow =
+            document.querySelector('.chat-window') ||
+            document.querySelector('.chat-layout') ||
+            document.querySelector('.chat-window-wrapper');
+
+          if (chatWindow) {
+            button.click();
+          }
+
+          return;
+        }
+      }
+    }
+
+    const mainBtn = document.getElementById('paradise-ai-main-btn');
+    const backBtn = document.getElementById('paradise-ai-back-btn');
+    const menu = document.getElementById('paradise-ai-menu');
+    const chatBtn = document.getElementById('paradise-open-chat');
+    const voiceBtn = document.getElementById('paradise-open-voice');
+
+    mainBtn.addEventListener('click', function () {
+      menu.classList.toggle('active');
+    });
+
+    chatBtn.addEventListener('click', function () {
+      menu.classList.remove('active');
+
+      /*
+        User selected one mode.
+        Hide "Talk to Ana", show "Back to options".
+      */
+      document.body.classList.add('paradise-mode-selected');
+
+      /*
+        Hide Vapi if it was previously visible.
+      */
+      document.body.classList.remove('paradise-voice-active');
+
+      setTimeout(function () {
+        openN8nChat();
+      }, 300);
+    });
+
+    voiceBtn.addEventListener('click', function () {
+      menu.classList.remove('active');
+
+      /*
+        User selected one mode.
+        Hide "Talk to Ana", show "Back to options".
+      */
+      document.body.classList.add('paradise-mode-selected');
+
+      /*
+        Show Vapi voice widget.
+      */
+      document.body.classList.add('paradise-voice-active');
+    });
+
+    backBtn.addEventListener('click', function () {
+      /*
+        Reset back to original menu mode.
+      */
+      document.body.classList.remove('paradise-mode-selected');
+      document.body.classList.remove('paradise-voice-active');
+
+      /*
+        Optional: close chat if it is open.
+      */
+      closeN8nChatIfOpen();
+
+      /*
+        Re-open option menu.
+      */
+      menu.classList.add('active');
+    });
+
+    document.addEventListener('click', function (event) {
+      const launcher = document.getElementById('paradise-ai-launcher');
+
+      if (!launcher.contains(event.target)) {
+        menu.classList.remove('active');
+      }
+    });
   </script>
 </body>
 </html>
