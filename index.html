@@ -31,11 +31,12 @@
       --chat--subtitle--line-height: 1.4;
     }
 
+    /* Hide n8n default button but keep it clickable by JS */
     .chat-window-toggle {
       opacity: 0 !important;
       pointer-events: none !important;
-      width: 0 !important;
-      height: 0 !important;
+      width: 1px !important;
+      height: 1px !important;
       overflow: hidden !important;
     }
 
@@ -56,7 +57,7 @@
       border-radius: 999px;
       padding: 14px 20px;
       font-size: 15px;
-      font-weight: 600;
+      font-weight: 700;
       cursor: pointer;
       box-shadow: 0 12px 30px rgba(0, 0, 0, 0.25);
     }
@@ -86,79 +87,60 @@
       display: inline-block;
     }
 
+    /* Small icon-only menu */
     #paradise-ai-menu {
       display: none;
       position: absolute;
       right: 0;
-      bottom: 62px;
-      width: 275px;
+      bottom: 64px;
       background: #ffffff;
-      border-radius: 18px;
+      border-radius: 999px;
+      padding: 10px;
+      gap: 10px;
       box-shadow: 0 18px 45px rgba(0, 0, 0, 0.22);
-      overflow: hidden;
       border: 1px solid rgba(22, 50, 79, 0.12);
     }
 
     #paradise-ai-menu.active {
-      display: block;
+      display: flex;
+      align-items: center;
     }
 
-    .paradise-ai-header {
-      background: #16324f;
-      color: #ffffff;
-      padding: 16px;
-      text-align: center;
-    }
-
-    .paradise-ai-header img {
-      width: 135px;
-      margin-bottom: 8px;
-    }
-
-    .paradise-ai-header strong {
-      display: block;
-      font-size: 16px;
-    }
-
-    .paradise-ai-header span {
-      display: block;
-      font-size: 13px;
-      opacity: 0.9;
-      margin-top: 4px;
-    }
-
-    .paradise-ai-option {
-      width: 100%;
+    .paradise-ai-icon-option {
+      width: 56px;
+      height: 56px;
       border: none;
-      background: #ffffff;
-      padding: 16px;
-      text-align: left;
+      border-radius: 50%;
       cursor: pointer;
-      border-bottom: 1px solid #eeeeee;
+      font-size: 25px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.18);
     }
 
-    .paradise-ai-option:hover {
-      background: #f7f4ec;
+    .paradise-ai-icon-option:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 26px rgba(0, 0, 0, 0.22);
     }
 
-    .paradise-ai-option strong {
-      display: block;
+    #paradise-open-chat {
+      background: #ffffff;
       color: #16324f;
-      font-size: 15px;
-      margin-bottom: 4px;
     }
 
-    .paradise-ai-option span {
-      color: #555555;
-      font-size: 13px;
-      line-height: 1.35;
+    #paradise-open-voice {
+      background: #c9a14a;
+      color: #16324f;
     }
 
+    /* Voice status interface */
     #paradise-voice-status {
       display: none;
       position: absolute;
       right: 0;
-      bottom: 62px;
+      bottom: 64px;
       width: 280px;
       background: #ffffff;
       border-radius: 18px;
@@ -178,8 +160,13 @@
       text-align: center;
     }
 
+    .paradise-voice-status-header strong {
+      display: block;
+      font-size: 16px;
+    }
+
     .paradise-voice-status-body {
-      padding: 16px;
+      padding: 18px;
       color: #555555;
       font-size: 14px;
       line-height: 1.45;
@@ -200,16 +187,19 @@
         transform: scale(0.95);
         opacity: 0.75;
       }
+
       70% {
         transform: scale(1.15);
         opacity: 0.25;
       }
+
       100% {
         transform: scale(0.95);
         opacity: 0.75;
       }
     }
 
+    /* n8n chat header customization */
     .chat-header {
       display: flex !important;
       flex-direction: column !important;
@@ -259,7 +249,6 @@
         bottom: 16px;
       }
 
-      #paradise-ai-menu,
       #paradise-voice-status {
         width: 255px;
       }
@@ -270,30 +259,39 @@
         padding: 13px 17px;
         font-size: 14px;
       }
+
+      .paradise-ai-icon-option {
+        width: 52px;
+        height: 52px;
+        font-size: 23px;
+      }
     }
   </style>
 </head>
 
 <body>
   <div id="paradise-ai-launcher">
-    <div id="paradise-ai-menu">
-      <div class="paradise-ai-header">
-        <img src="https://www.paradiserealestate.es/crm/pages/agencies/paradisepro/assets/logofooter.svg" alt="Paradise Real Estate" />
-        <strong>Ana AI Assistant</strong>
-        <span>Choose how you want to speak with us</span>
-      </div>
 
-      <button class="paradise-ai-option" id="paradise-open-chat">
-        <strong>💬 Chat with Ana</strong>
-        <span>Ask property questions or start your enquiry by message.</span>
+    <!-- Icon-only option menu -->
+    <div id="paradise-ai-menu">
+      <button
+        class="paradise-ai-icon-option"
+        id="paradise-open-chat"
+        title="Chat with Ana"
+        aria-label="Chat with Ana">
+        💬
       </button>
 
-      <button class="paradise-ai-option" id="paradise-open-voice">
-        <strong>📞 Call Ana</strong>
-        <span>Start a live voice conversation with our AI receptionist.</span>
+      <button
+        class="paradise-ai-icon-option"
+        id="paradise-open-voice"
+        title="Call Ana"
+        aria-label="Call Ana">
+        📞
       </button>
     </div>
 
+    <!-- Voice interface -->
     <div id="paradise-voice-status">
       <div class="paradise-voice-status-header">
         <strong>Ana Voice Assistant</strong>
@@ -310,7 +308,7 @@
     <button id="paradise-ai-end-call-btn">End call</button>
   </div>
 
-  <!-- Main launcher logic. This loads first, so Talk to Ana always works. -->
+  <!-- Launcher + Voice Logic -->
   <script>
     const VAPI_PUBLIC_KEY = '9585658c-2c48-4824-b6ec-aca50aac826e';
     const VAPI_ASSISTANT_ID = '9b1c1276-181f-4255-a532-d20ee1d40b88';
@@ -465,6 +463,7 @@
     }
 
     mainBtn.addEventListener('click', function () {
+      voiceStatus.classList.remove('active');
       menu.classList.toggle('active');
     });
 
@@ -517,7 +516,7 @@
     });
   </script>
 
-  <!-- n8n Chat + Logger. If this fails, launcher button still works. -->
+  <!-- n8n Chat + Logger -->
   <script type="module">
     import { createChat } from 'https://cdn.jsdelivr.net/npm/@n8n/chat/dist/chat.bundle.es.js';
 
